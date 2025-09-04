@@ -13,48 +13,46 @@ class Person {
 public class CashflowMinimizer {
     
     public static void minimizeCashFlow(Person[] people) {
-        calculateNetBalances(people);
-        
         List<String> transactions = new ArrayList<>();
         
         while (true) {
-            Person maxCreditor = getMaxPerson(people, true);
-            Person maxDebtor = getMaxPerson(people, false);
+            // Find person who owes the most (most negative balance)
+            Person maxDebtor = null;
+            for (Person p : people) {
+                if (maxDebtor == null || p.balance < maxDebtor.balance) {
+                    maxDebtor = p;
+                }
+            }
             
-            if (maxCreditor.balance == 0 && maxDebtor.balance == 0) {
+            // Find person who is owed the most (most positive balance)
+            Person maxCreditor = null;
+            for (Person p : people) {
+                if (maxCreditor == null || p.balance > maxCreditor.balance) {
+                    maxCreditor = p;
+                }
+            }
+            
+            // Stop if everyone is settled
+            if (maxDebtor.balance == 0 && maxCreditor.balance == 0) {
                 break;
             }
             
-            int minAmount = Math.min(maxCreditor.balance, -maxDebtor.balance);
+            // Calculate payment amount
+            int amount = Math.min(-maxDebtor.balance, maxCreditor.balance);
             
-            transactions.add(maxDebtor.name + " pays " + minAmount + " to " + maxCreditor.name);
+            // Record transaction
+            transactions.add(maxDebtor.name + " pays " + amount + " to " + maxCreditor.name);
             
-            maxCreditor.balance -= minAmount;
-            maxDebtor.balance += minAmount;
+            // Update balances
+            maxDebtor.balance += amount;
+            maxCreditor.balance -= amount;
         }
         
+        // Print all transactions
         System.out.println("\nOptimal Transactions:");
         for (String transaction : transactions) {
             System.out.println(transaction);
         }
-    }
-    
-    private static void calculateNetBalances(Person[] people) {
-    }
-    
-    private static Person getMaxPerson(Person[] people, boolean getCreditor) {
-        Person maxPerson = null;
-        int maxAmount = 0;
-        
-        for (Person person : people) {
-            if ((getCreditor && person.balance > maxAmount) || 
-                (!getCreditor && person.balance < maxAmount)) {
-                maxAmount = person.balance;
-                maxPerson = person;
-            }
-        }
-        
-        return maxPerson;
     }
     
     public static void main(String[] args) {
